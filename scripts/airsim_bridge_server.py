@@ -10,8 +10,7 @@
           "X": 0, "Y": 0, "Z": -5,
           "Yaw": 90
         }
-    },
-    "CommandMode": "Velocity" for velocity based movement, "Position" for position based movement
+    }
 }
 
 """
