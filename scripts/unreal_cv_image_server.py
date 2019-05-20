@@ -111,6 +111,10 @@ class UnrealCVServer():
     # Service Handlers
     def handle_get_camera_image(self, request):
         # Parse the request arguments
+        # It is also possible to get the png directly without saving to a file
+        # res = client.request('vget /camera/0/lit png')
+        # im = read_png(res)
+        # print(im.shape)
         filename = None
         if hasattr(request, 'filename'):
             filename = request.filename

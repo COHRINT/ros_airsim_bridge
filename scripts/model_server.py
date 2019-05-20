@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+##### DO NOT USE!! ALREADY IMPLEMENTED IN airsim_bridge_server.py
+
 
 import sys, select, termios, tty
 import math
