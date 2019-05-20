@@ -14,8 +14,7 @@
           "VehicleType": "PhysXCar",
           "X": 0, "Y": 0, "Z": -2
         }
-    },
-    "CommandMode": "Velocity" for velocity based movement, "Position" for position based movement
+    }
 }
 
 """
@@ -39,7 +38,6 @@ def main():
 
 class airsim_bridge():
     def __init__(self):
-        print("POPPP")
         # get airsim settings
         settings = airsim_objects.parseSettings("/home/tetsuo/Documents/AirSim/settings.json")
         com_mode = settings["CommandMode"]
