@@ -24,7 +24,8 @@ import unrealcv
 # import unreal_coordinates as ue_coords
 from airsim_bridge.srv import *
 
-
+# CHANGE PORT AT:
+# /home/tetsuo/ws/sim/UnrealEngine/Engine/Binaries/Linux/unrealcv.ini
 
 class UnrealCVServer():
     """
@@ -54,7 +55,7 @@ class UnrealCVServer():
         self.opencv_bridge = cv_bridge.CvBridge()
 
         self._client_lock = threading.Lock()
-        self._client = unrealcv.Client(endpoint=(host, port))
+        self._client = unrealcv.Client(('127.0.0.1', 9234))
         self._client.connect()
         if not self._client.isconnected():
             raise RuntimeError("Could not connect to unrealcv simulator, is it running?")
@@ -116,12 +117,14 @@ class UnrealCVServer():
         view_mode = 'lit'
         if hasattr(request, 'view_mode') and request.view_mode in self.view_modes:
             view_mode = request.view_mode
-
+        print
         unrealcv_message = make_vget_camera_image(request.camera_id, view_mode, filename)
         image_filename = self.request_client(unrealcv_message)
+        print(image_filename)
         if os.path.isfile(image_filename):
             image_mat = opencv.imread(image_filename)
-            os.remove(image_filename)
+            # os.remove(image_filename)
+            print("removing")
         else:
             image_mat = np.matrix([[]])
         return self.opencv_bridge.cv2_to_imgmsg(image_mat, encoding='passthrough')
@@ -218,10 +221,13 @@ def unreal_quat2euler(w, x, y, z):
         roll = np.arctan2(-2 * (w * x + y * z), (1 - 2 * (x * x + y * y))) * (180 / np.pi)
 
 # Helper messages to create UnrealCV message URIs
-def make_vget_camera_image(camera_id, view_mode, filename=None):
+def make_vget_camera_image(camera_id, view_mode, filename):
+    print(str(view_mode))
+    print(str(filename))
     if filename is None:
         # return "vget /camera/{0}/{1}".format(camera_id, view_mode)
-        return "vget /camera/0/depth"
+        print("filename none")
+        return "vget /camera/0/"+str(view_mode)
     else:
         return "vget /camera/{0}/{1} {2}".format(camera_id, view_mode, filename)
 
