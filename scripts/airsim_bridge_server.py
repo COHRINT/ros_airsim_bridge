@@ -10,17 +10,11 @@
           "X": 0, "Y": 0, "Z": -5,
           "Yaw": 90
         }
-        "Car1": {
-          "VehicleType": "PhysXCar",
-          "X": 0, "Y": 0, "Z": -2
-        }
     },
     "CommandMode": "Velocity" for velocity based movement, "Position" for position based movement
 }
 
 """
-
-# Add visualization_msgs/Marker for adding points in Unreal (or getting points/boundaries from unreal)
 
 import sys, select, termios, tty
 import math
@@ -39,12 +33,11 @@ def main():
 
 class airsim_bridge():
     def __init__(self):
-        print("POPPP")
         # get airsim settings
         settings = airsim_objects.parseSettings("/home/tetsuo/Documents/AirSim/settings.json")
         com_mode = settings["CommandMode"]
-        drone_name = "Drone1" #settings["drone_name"] =
-        car_name = "Car1" #settings["car_name"] =
+        drone_name = "Drone1" #settings["Vehicles"][0]
+        # car_name = "Car1"
 
         # setup ROS node
         rospy.init_node('airsim_bridge')
@@ -56,33 +49,12 @@ class airsim_bridge():
         # setup vehicles
         self.drone = airsim_objects.AirsimDrone(drone_name)
         self.drone.beginMovement().join()
-        # droneTwist.linear.x = 0; droneTwist.linear.y = 0; droneTwist.linear.z = 0
-        # droneTwist.angular.x = 0; droneTwist.angular.y = 0; droneTwist.angular.z = 0
-        # car = airsim_objects.AirSimCar(settings["car_name"])
-        # carTwist.linear.x = 0; carTwist.linear.y = 0; carTwist.linear.z = 0
-        # carTwist.angular.x = 0; carTwist.angular.y = 0; carTwist.angular.z = 0
-
-        # begin
-
-        # print("poop")
 
 
     def run(self):
         # Publish camera/state info
         self.drone.publishImage()
         self.drone.publishState()
-
-        # Move vehicle
-        # if com_mode == 'Velocity':
-        #     f1 = drone.moveByVelocity(droneTwist)
-        # elif com_mode == 'Position':
-        #     if doneMoving
-        #         f1 = drone.moveToPosition(dronePose)
-        # else:
-        #     print("Please select valid CommandMode ('Velocity' or 'Position') in settings.json file")
-
-        # f1.join()
-        # f2.join()
 
 
     def droneTwistCallback(self, data):
