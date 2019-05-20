@@ -1,0 +1,4 @@
+<launch>
+  <node name="airsim_bridge_server.py" pkg="airsim_bridge" />
+  <node name="unreal_cv_image_server.py" pkg="airsim_bridge" />
+</launch>

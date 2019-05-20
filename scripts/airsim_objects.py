@@ -17,6 +17,8 @@ import rospy
 from geometry_msgs.msg import Twist, PoseStamped
 from sensor_msgs.msg import CompressedImage
 
+import ros_airsim_bridge.srv as srvs
+
 CAMERA_NAME = '0'
 IMAGE_TYPE = airsim.ImageType.Scene
 DECODE_EXTENSION = '.jpg'
@@ -34,12 +36,15 @@ class AirsimDrone():
         self.name = name
         self.image_pub = rospy.Publisher("/%s/image_raw/compressed" % self.name, CompressedImage)
         self.state_pub = rospy.Publisher("/%s/state" % self.name, PoseStamped)
+        self.obj_loc_srv = rospy.Service('getObjectLocation', srvs.GetObjectLocation, self.getObjectLocation)
 
+    # Begins takeoff
     def beginMovement(self):
         self.client.enableApiControl(True, self.name)
         self.client.armDisarm(True, self.name)
         return self.client.takeoffAsync(vehicle_name=self.name)
 
+    # Publishes image from drone viewpoint
     def publishImage(self, type="color"):
         response_image = self.client.simGetImage(CAMERA_NAME, IMAGE_TYPE)
         np_response_image = np.asarray(bytearray(response_image), dtype="uint8")
@@ -50,6 +55,12 @@ class AirsimDrone():
         msg.data = np_response_image.tostring()
         # msg.data = np.array(cv2.imencode('.jpg', image_np)[1]).tostring()
         self.image_pub.publish(msg)
+
+    def getObjectLocation(self, request):
+        pose = client.simGetObjectPose(request.object_name);
+        location = pose.position
+        location, _ = ue_coords.transform_from_unreal(location, None)
+        return geometry_msgs.msg.Point(x=location[0], y=location[1], z=location[2])
 
 
     # def generateVideoStream(self):
@@ -70,6 +81,8 @@ class AirsimDrone():
     #         # yield (b'--frame\r\n'
     #         #        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
     #
+
+    # Move drone using position, yaw targets
     def moveToPosition(self, pos_msg):
         # self.client.enableApiControl(True, self.name)
         # self.client.armDisarm(True, self.name)
@@ -81,6 +94,7 @@ class AirsimDrone():
                 yaw_mode=airsim.YawMode(is_rate=False, yaw_or_rate=pos_msg.pose.orientation.w),
                 vehicle_name=self.name)
 
+    # Moves drone using velocity controls
     def moveByVelocity(self, pos_msg):
         self.client.enableApiControl(True, self.name)
         self.client.armDisarm(True, self.name)
@@ -92,6 +106,7 @@ class AirsimDrone():
                 yaw_mode=airsim.YawMode(is_rate=True, yaw_or_rate=pos_msg.angular.x),
                 vehicle_name=self.name)
 
+    # Publishes current position and orientation of drone
     def publishState(self):
         drone_state = self.client.getMultirotorState(vehicle_name=self.name)
         pos_ned = drone_state.kinematics_estimated.position

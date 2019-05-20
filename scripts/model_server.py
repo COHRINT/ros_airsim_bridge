@@ -17,7 +17,7 @@ class modelServer():
         # get airsim settings
         settings = airsim_objects.parseSettings("/home/tetsuo/Documents/AirSim/settings.json")
         print(settings)
-        drone_name = "Drone1" #settings["drone_name"]
+        drone_name = "Drone1"
 
         # setup drone connection
         self.client = airsim.MultirotorClient()
