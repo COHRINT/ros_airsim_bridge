@@ -21,7 +21,6 @@ import signal
 
 import rospy
 from geometry_msgs.msg import Twist, PoseStamped
-
 import airsim_objects
 
 def main():
@@ -39,28 +38,33 @@ class airsim_bridge():
         # car_name = "Car1"
 
         # setup ROS node
+        print("Init Node")
         rospy.init_node('airsim_bridge')
         rospy.Subscriber("/%s/cmd_vel" % drone_name, Twist, self.droneTwistCallback)
         rospy.Subscriber("/%s/pose" % drone_name, PoseStamped, self.dronePoseCallback)
         # rospy.Subscriber("/%s/cmd_vel" % car_name, Twist, carTwistCallback)
         self.r = rospy.Rate(4) # 4hz
+        # rospy.spin()
 
         # setup vehicles
-        self.drone = airsim_objects.AirsimDrone(drone_name)
-        self.drone.beginMovement().join()
+        self.drone = airsim_objects.AirsimDrone(drone_name) # while not rospy.is_shutdown():imDrone(drone_name)
+        self.drone.beginMovement().join()       #     self.drone_video = DroneVideo("Drone 1"))
 
 
     def run(self):
+        # print("Hello")
         # Publish camera/state info
-        self.drone.publishImage()
+        # self.drone.publishImage()
         self.drone.publishState()
 
 
     def droneTwistCallback(self, data):
+        print("move be vel")
         droneTwist = data
         self.drone.moveByVelocity(droneTwist)
 
     def dronePoseCallback(self, data):
+        print("move to pos")
         self.drone.moveToPosition(data)
 
 

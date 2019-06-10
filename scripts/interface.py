@@ -34,6 +34,7 @@ from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QFont
 
 from interface_elements import *
+import time
 
 # from observation_interface.srv import *
 # from observation_interface.msg import *
@@ -97,6 +98,22 @@ class ObservationInterface(QMainWindow):
         self.caught_signal.connect(self.caught_event)
 
         print('Observation Interface ready.')
+        # self.timer = QTimer()
+        # self.timer.setInterval(20)
+        # self.timer.timeout.connect(self.display_video)
+        # self.timer.start()
+
+        # time.sleep(10)
+
+        # while not rospy.is_shutdown():
+        #     self.drone_video = DroneVideo("Drone 1")
+        #     time.sleep(10)
+            # self.cam_1 = SecurityCamera(1,'Study')
+            # self.cam_2 = SecurityCamera(2,'Hallway')
+            # self.cam_3 = SecurityCamera(3,'Kitchen')
+
+            # self.main_layout.addWidget(self.cop_video,1,3,4,2,Qt.AlignCenter)
+            # self.main_layout.addWidget(self.drone_video,1,11,4,1,Qt.AlignCenter)
 
     def initUI(self):
 
@@ -174,6 +191,13 @@ class ObservationInterface(QMainWindow):
         name = msg.robber
         self.caught_signal.emit(name)
 
+    def display_video(self):
+        print("Display video")
+        # self.drone_video.display_video()
+        self.drone_video = DroneVideo("Drone 1")
+
+        self.main_layout.addWidget(self.drone_video,1,11,4,1,Qt.AlignCenter)
+
     @pyqtSlot(str)
     def caught_event(self,name):
         name = name.title()
@@ -194,4 +218,18 @@ class ObservationInterface(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     obs_app = ObservationInterface()
-    sys.exit(app.exec_())
+    print("Before exec")
+    obs_app.display_video()
+    app.exec_()
+    print("End hello")
+
+    # n = os.fork()
+
+    # if n>0:
+    #     sys.exit(app.exec_())
+    # else:
+    #     while not rospy.is_shutdown():
+    #         obs_app = ObservationInterface()
+
+    # while not rospy.is_shutdown():
+        

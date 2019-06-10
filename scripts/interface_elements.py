@@ -67,7 +67,7 @@ tab_widget_style = "\
 
 
 yes_btn_style = "\
-                QPushButton {   \
+                QPushButton GetCameraImage{   \
                     color: white;   \
                     background-color: green;    \
                     font-size: 8pt; \
@@ -93,7 +93,7 @@ null_btn_style = "\
                         font-size: 8pt; \
                         margin: 5px;    \
                         padding: 5px;   \
-                        min-width: 50px; \
+                        min-GetCameraImagewidth: 50px; \
                     }"
 
 question_text_style = "\
@@ -443,228 +443,228 @@ movement_types = ["moving","stopped"]
 
 movement_qualities = ["slowly","moderately","quickly"]
 
-class HumanPush(QWidget):
-    """
-    The human push questions widget. At any time the user can construct a
-    sentence from a codebook of words and push that observation to the robot via
-    ROS topic.
-    """
+# class HumanPush(QWidget):
+#     """
+#     The human push questions widget. At any time the user can construct a
+#     sentence from a codebook of words and push that observation to the robot via
+#     ROS topic.
+#     """
 
-    def __init__(self):
-        super(QWidget,self).__init__()
+#     def __init__(self):
+#         super(QWidget,self).__init__()
 
-        self.name = "Human Observations"
+#         self.name = "Human Observations"
 
-        self.pub = rospy.Publisher("human_push",String,queue_size=10)
+#         self.pub = rospy.Publisher("human_push",String,queue_size=10)
 
-        self.initUI()
+#         self.initUI()
 
-    def initUI(self):
-        self.main_and_title = QVBoxLayout()
-        self.main_layout = QHBoxLayout()
+#     def initUI(self):
+#         self.main_and_title = QVBoxLayout()
+#         self.main_layout = QHBoxLayout()
 
-        # add name as a label
-        self.name_label = QLabel(self.name)
-        self.name_label.setStyleSheet(widget_title_style)
-        self.main_and_title.addWidget(self.name_label)
+#         # add name as a label
+#         self.name_label = QLabel(self.name)
+#         self.name_label.setStyleSheet(widget_title_style)
+#         self.main_and_title.addWidget(self.name_label)
 
-        self.main_and_title.addLayout(self.main_layout)
+#         self.main_and_title.addLayout(self.main_layout)
 
-        # make tab container
-        self.tabs = QTabWidget()
-        self.position_objects_tab = QWidget()
-        self.position_objects_tab.layout = QHBoxLayout()
-        self.position_objects_tab.setStyleSheet(tab_widget_style)
-        self.position_area_tab = QWidget()
-        self.position_area_tab.layout = QHBoxLayout()
-        self.position_area_tab.setStyleSheet(tab_widget_style)
-        self.movement_tab = QWidget()
-        self.movement_tab.layout = QHBoxLayout()
-        self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
-        self.tabs.addTab(self.position_area_tab,'Position (Area)')
-        # self.tabs.addTab(self.movement_tab,'Movement')
+#         # make tab container
+#         self.tabs = QTabWidget()
+#         self.position_objects_tab = QWidget()
+#         self.position_objects_tab.layout = QHBoxLayout()
+#         self.position_objects_tab.setStyleSheet(tab_widget_style)
+#         self.position_area_tab = QWidget()
+#         self.position_area_tab.layout = QHBoxLayout()
+#         self.position_area_tab.setStyleSheet(tab_widget_style)
+#         self.movement_tab = QWidget()
+#         self.movement_tab.layout = QHBoxLayout()
+#         self.tabs.addTab(self.position_objects_tab,'Position (Objects)')
+#         self.tabs.addTab(self.position_area_tab,'Position (Area)')
+#         # self.tabs.addTab(self.movement_tab,'Movement')
 
-        # add statement 'I know a robber is...' next to tabs
-        self.statment_preface = QLabel('I know a robber...')
-        self.statment_preface.setStyleSheet(i_know_robber_style)
-        self.main_layout.addWidget(self.statment_preface)
+#         # add statement 'I know a robber is...' next to tabs
+#         self.statment_preface = QLabel('I know a robber...')
+#         self.statment_preface.setStyleSheet(i_know_robber_style)
+#         self.main_layout.addWidget(self.statment_preface)
 
-        # add tabs to main layout
-        self.tabs.setStyleSheet(tab_widget_style)
-        self.main_layout.addWidget(self.tabs)
+#         # add tabs to main layout
+#         self.tabs.setStyleSheet(tab_widget_style)
+#         self.main_layout.addWidget(self.tabs)
 
-        self.widget_list = []
-        # make Position Objects codebook
-        # object_boxes = [certainties,targets,positivities,object_relations,
-        #                     objects]
-        object_boxes = [positivities,object_relations,objects]
-        object_layout, object_widget_list = self.make_codebook(object_boxes,
-                                                self.position_objects_tab.layout)
-        self.position_objects_tab.setLayout(object_layout)
-        self.widget_list.append(object_widget_list)
+#         self.widget_list = []
+#         # make Position Objects codebook
+#         # object_boxes = [certainties,targets,positivities,object_relations,
+#         #                     objects]
+#         object_boxes = [positivities,object_relations,objects]
+#         object_layout, object_widget_list = self.make_codebook(object_boxes,
+#                                                 self.position_objects_tab.layout)
+#         self.position_objects_tab.setLayout(object_layout)
+#         self.widget_list.append(object_widget_list)
 
-        # make Position Area codebook
-        # area_boxes = [certainties,targets,positivities,area_relations,areas]
-        area_boxes = [positivities,area_relations,areas]
-        area_layout, area_widget_list = self.make_codebook(area_boxes,
-                                            self.position_area_tab.layout)
-        self.position_area_tab.setLayout(area_layout)
-        self.widget_list.append(area_widget_list)
+#         # make Position Area codebook
+#         # area_boxes = [certainties,targets,positivities,area_relations,areas]
+#         area_boxes = [positivities,area_relations,areas]
+#         area_layout, area_widget_list = self.make_codebook(area_boxes,
+#                                             self.position_area_tab.layout)
+#         self.position_area_tab.setLayout(area_layout)
+#         self.widget_list.append(area_widget_list)
 
-        # make Movement codebook
-        # movement_boxes = [certainties,targets,positivities,movement_types,
-        #                     movement_qualities]
-        # movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
-        #                                             self.movement_tab.layout)
-        # self.movement_tab.setLayout(movement_layout)
-        # self.widget_list.append(movement_widget_list)
+#         # make Movement codebook
+#         # movement_boxes = [certainties,targets,positivities,movement_types,
+#         #                     movement_qualities]
+#         # movement_layout, movement_widget_list = self.make_codebook(movement_boxes,
+#         #                                             self.movement_tab.layout)
+#         # self.movement_tab.setLayout(movement_layout)
+#         # self.widget_list.append(movement_widget_list)
 
-        # add the question parts to the codebooks
-        # self.add_list_items()
+#         # add the question parts to the codebooks
+#         # self.add_list_items()
 
-        # make the 'send' and 'clear' buttons
-        self.send_btn = QPushButton('Send')
-        self.send_btn.clicked.connect(self.publish_msg)
-        self.send_btn.setStyleSheet(send_btn_style)
-        self.clear_btn = QPushButton('Clear')
-        self.clear_btn.clicked.connect(self.clear_selection)
-        self.clear_btn.setStyleSheet(clear_btn_style)
+#         # make the 'send' and 'clear' buttons
+#         self.send_btn = QPushButton('Send')
+#         self.send_btn.clicked.connect(self.publish_msg)
+#         self.send_btn.setStyleSheet(send_btn_style)
+#         self.clear_btn = QPushButton('Clear')
+#         self.clear_btn.clicked.connect(self.clear_selection)
+#         self.clear_btn.setStyleSheet(clear_btn_style)
 
-        # make layout for 'send' and 'clear' buttons
-        self.btn_column = QVBoxLayout()
-        self.btn_column.addWidget(self.clear_btn)
-        self.btn_column.addWidget(self.send_btn)
-        self.main_layout.addLayout(self.btn_column)
+#         # make layout for 'send' and 'clear' buttons
+#         self.btn_column = QVBoxLayout()
+#         self.btn_column.addWidget(self.clear_btn)
+#         self.btn_column.addWidget(self.send_btn)
+#         self.main_layout.addLayout(self.btn_column)
 
-        # self.setSizePolicy(QSizePolicy())
-        self.setAutoFillBackground(True);
-        palette = self.palette()
-        role = self.backgroundRole()
-        palette.setColor(role, QColor('green'))
-        self.setPalette(palette)
-        self.setLayout(self.main_and_title)
+#         # self.setSizePolicy(QSizePolicy())
+#         self.setAutoFillBackground(True);
+#         palette = self.palette()
+#         role = self.backgroundRole()
+#         palette.setColor(role, QColor('green'))
+#         self.setPalette(palette)
+#         self.setLayout(self.main_and_title)
 
-    def make_codebook(self,boxes,tab_widget_layout):
-        """
-        Make a codebook for a category of observations given the chosen items
-        """
-        widget_list = []
-        for box in boxes:
-            codebook_box = QListWidget()
-            count = 1
-            for item in box:
-                list_item = QListWidgetItem(item)
-                codebook_box.insertItem(count,list_item)
-                count += 1
-            tab_widget_layout.addWidget(codebook_box)
-            widget_list.append(codebook_box)
+#     def make_codebook(self,boxes,tab_widget_layout):
+#         """
+#         Make a codebook for a category of observations given the chosen items
+#         """
+#         widget_list = []
+#         for box in boxes:
+#             codebook_box = QListWidget()
+#             count = 1
+#             for item in box:
+#                 list_item = QListWidgetItem(item)
+#                 codebook_box.insertItem(count,list_item)
+#                 count += 1
+#             tab_widget_layout.addWidget(codebook_box)
+#             widget_list.append(codebook_box)
 
-        return tab_widget_layout, widget_list
+#         return tab_widget_layout, widget_list
 
-    def get_answer(self):
-        """
-        Get the answer the user has created with the selections in the three
-        codebook boxes.
-        """
-        # get index of selected tab
-        idx = self.tabs.currentIndex()
-        answer = 'I know Roy'
+#     def get_answer(self):
+#         """
+#         Get the answer the user has created with the selections in the three
+#         codebook boxes.
+#         """
+#         # get index of selected tab
+#         idx = self.tabs.currentIndex()
+#         answer = 'I know Roy'
 
-        # get selected text from all boxes in selected tab
-        for codebook in self.widget_list[idx]:
-            ans = ''
-            try:
-                ans = codebook.selectedItems()[0].text()
-            except IndexError:
-                error_dialog = QErrorMessage(self)
-                error_dialog.showMessage('You must make a selection in all boxes before \
-                                            attempting to send a message.')
-                return None
-            answer = answer + " " + ans
-        answer.lstrip(' ')
-        print(answer)
-        return answer
+#         # get selected text from all boxes in selected tab
+#         for codebook in self.widget_list[idx]:
+#             ans = ''
+#             try:
+#                 ans = codebook.selectedItems()[0].text()
+#             except IndexError:
+#                 error_dialog = QErrorMessage(self)
+#                 error_dialog.showMessage('You must make a selection in all boxes before \
+#                                             attempting to send a message.')
+#                 return None
+#             answer = answer + " " + ans
+#         answer.lstrip(' ')
+#         print(answer)
+#         return answer
 
-    def clear_selection(self):
-        """
-        Clear the selected components of an answer when the 'CLEAR' button is
-        is pressed, or when an answer is sent.
-        """
-        for widget in self.widget_list:
-            for codebook in widget:
-                codebook.clearSelection()
+#     def clear_selection(self):
+#         """
+#         Clear the selected components of an answer when the 'CLEAR' button is
+#         is pressed, or when an answer is sent.
+#         """
+#         for widget in self.widget_list:
+#             for codebook in widget:
+#                 codebook.clearSelection()
 
-    def publish_msg(self):
-        """
-        Get the answer, clear selections and publish answer to question to
-        topic over ROS.
-        """
-        answer = self.get_answer()
-        if answer is not None:
-            msg = String(answer)
-            self.pub.publish(msg)
+#     def publish_msg(self):
+#         """
+#         Get the answer, clear selections and publish answer to question to
+#         topic over ROS.
+#         """
+#         answer = self.get_answer()
+#         if answer is not None:
+#             msg = String(answer)
+#             self.pub.publish(msg)
 
-#        self.clear_selection()
-
-
-MapDisplay_style = "\
-                        MapDisplay {   \
-                            border-style: solid;   \
-                            border-width: 10 px;  \
-                            border-color: black; \
-                        }"
-
-class MapDisplay(QWidget):
-    """
-    The widget to display the cop's belief and position overlayed onto a map
-    of the environment. Loaded from directory policy_translator/tmp/ when
-    callback is triggered. Callback is triggered by ROS topic, but recevies
-    empty message.
-    """
-
-    def __init__(self):
-        super(QWidget,self).__init__()
-        print("Initializing map")
-
-        self.name = "Belief Map"
-
-        rospy.Subscriber("/interface_map", Image, self.map_update)
-        self.bridge = CvBridge()
-        self.format = QImage.Format_RGB888
-
-        self.initUI()
+# #        self.clear_selection()
 
 
-    def initUI(self):
-        self.main_layout = QVBoxLayout()
+# MapDisplay_style = "\
+#                         MapDisplay {   \
+#                             border-style: solid;   \
+#                             border-width: 10 px;  \
+#                             border-color: black; \
+#                         }"
 
-        # set style and add title
-        self.name_label = QLabel(self.name)
-        self.name_label.setStyleSheet(widget_title_style)
-        self.main_layout.addWidget(self.name_label)
+# class MapDisplay(QWidget):
+#     """
+#     The widget to display the cop's belief and position overlayed onto a map
+#     of the environment. Loaded from directory policy_translator/tmp/ when
+#     callback is triggered. Callback is triggered by ROS topic, but recevies
+#     empty message.
+#     """
 
-        # create label to hold image
-        self.image_view = QPixmap()
-        self.pic_label = QLabel(self)
-        self.main_layout.addWidget(self.pic_label)
+#     def __init__(self):
+#         super(QWidget,self).__init__()
+#         print("Initializing map")
 
-        self.setLayout(self.main_layout)
+#         self.name = "Belief Map"
 
-        self.setAutoFillBackground(True);
-        palette = self.palette()
-        role = self.backgroundRole()
-        palette.setColor(role, QColor('green'))
-        self.setPalette(palette)
-        self.show()
+#         rospy.Subscriber("/interface_map", Image, self.map_update)
+#         self.bridge = CvBridge()
+#         self.format = QImage.Format_RGB888
 
-    def map_update(self, map_msg): # callback for the policy translator publisher
-        # load image from the topic
-        image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
-        height, width, channel = image.shape
-        bytesPerLine = 3 * width
-        qImg = QImage(image.data, width, height, bytesPerLine, QImage.Format_RGB888)
-        pixMap = QPixmap.fromImage(qImg)
-        self.pic_label.setPixmap(pixMap)
+#         self.initUI()
+
+
+#     def initUI(self):
+#         self.main_layout = QVBoxLayout()
+
+#         # set style and add title
+#         self.name_label = QLabel(self.name)
+#         self.name_label.setStyleSheet(widget_title_style)
+#         self.main_layout.addWidget(self.name_label)
+
+#         # create label to hold image
+#         self.image_view = QPixmap()
+#         self.pic_label = QLabel(self)
+#         self.main_layout.addWidget(self.pic_label)
+
+#         self.setLayout(self.main_layout)
+
+#         self.setAutoFillBackground(True);
+#         palette = self.palette()
+#         role = self.backgroundRole()
+#         palette.setColor(role, QColor('green'))
+#         self.setPalette(palette)
+#         self.show()
+
+#     def map_update(self, map_msg): # callback for the policy translator publisher
+#         # load image from the topic
+#         image = self.bridge.imgmsg_to_cv2(map_msg, "rgb8")
+#         height, width, channel = image.shape
+#         bytesPerLine = 3 * width
+#         qImg = QImage(image.data, width, height, bytesPerLine, QImage.Format_RGB888)
+#         pixMap = QPixmap.fromImage(qImg)
+#         self.pic_label.setPixmap(pixMap)
 
 class VideoContainer(QWidget):
     """
@@ -728,20 +728,40 @@ class DroneVideo(VideoContainer):
         # rospy.ServiceProxy(self.service_name, GetCameraImage, self.ros_update)
         # try:
         rospy.init_node('camera_view_client')
+        # while not rospy.is_shutdown():
         rospy.wait_for_service(self.service_name)
         camera_image = rospy.ServiceProxy(self.service_name, GetCameraImage)
-        new_image = camera_image(0, '')
-        print(new_image)
-        # except:in
-        #     print("service proxy error")
+        self.new_image = camera_image(0, 'lit')
+        self.ros_update()
+        # # print(new_image)
+        # height = new_image.image.height
+        # data = new_image.image.data
+        # width = new_image.image.width
+        # bytes_per_line = new_image.image.step
+        # self.image = QImage(data, width, height, bytes_per_line, QImage.Format_RGB888)
+        # # print(self.img)
+        # self.canvas.image = self.image.mirrored(True,True)
+        # self.canvas.update()
+        # print("updating canvas")
+        # # except:in
+        # #     print("service proxy error")
         
+    def display_video(self):
+        # rospy.init_node('camera_view_client')
+        # while not rospy.is_shutdown():
+        self.initUI()
+        rospy.wait_for_service(self.service_name)
+        camera_image = rospy.ServiceProxy(self.service_name, GetCameraImage)
+        self.new_image = camera_image(0, 'lit')
+        self.ros_update()
 
-    def ros_update(self,msg):
+    def ros_update(self):
         """
         Callback function to display a ROS image topic with streaming video data.
         """
         print("callback")
         # process received message
+        msg = self.new_image.image
         image_data = msg.data
         image_height = msg.height
         image_width = msg.width
@@ -764,45 +784,3 @@ class DroneVideo(VideoContainer):
             self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
         self.canvas.update()
         print("Updating canvas")
-
-class SecurityCamera(VideoContainer):
-    """
-    Subclasses VideoDisplay to display the feed of a security camera.
-    """
-    def __init__(self,num,location):
-        super(VideoContainer,self).__init__()
-        self.name = "Camera {}: {}".format(num,location)
-        self.topic_name = 'cam{}'.format(num)
-        self.topic_name = "/" + self.topic_name + "/usb_cam/image_decompressed"
-#        self.topic_name = "/" + self.topic_name + "/usb_cam/image_raw"
-        self.size = (320,240)
-        self.img = 'smaller_placeholder.png'
-        self.initUI()
-        self.format = QImage.Format_RGB888
-        rospy.Subscriber(self.topic_name, Image, self.ros_update)
-
-    def ros_update(self,msg):
-        """
-        Callback function to display a ROS image topic with streaming video data.
-        """
-        # process received message
-        image_data = msg.data
-        image_height = msg.height
-        image_width = msg.width
-        bytes_per_line = msg.step
-
-        # convert image from little endian BGR to big endian RGB
-        length = int(len(image_data)/2)
-        # unpack data into array
-        unpacked_data = array.array('H',image_data)
-        # swap bytes (to swap B and R)
-        unpacked_data.byteswap() # causes strange vertical line artifacts
-        unpacked_data.reverse() #<>NOTE: reversing the entire list of bytes causes the image to be displayed upside down, but also removes artifacts for some reason
-        # repack with opposite endian format
-        image_data = struct.pack('<'+str(length)+'H',*unpacked_data)
-
-        # create QImage with received image data and metadata
-        self.image = QImage(image_data,image_width,image_height,bytes_per_line,self.format)
-        if not self.image.isNull():
-            self.canvas.image = self.image.mirrored(True,True) #undo previous reversal
-        self.canvas.update()

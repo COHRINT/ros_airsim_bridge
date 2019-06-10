@@ -27,6 +27,11 @@ from airsim_bridge.srv import *
 # CHANGE PORT AT:
 # /home/tetsuo/ws/sim/UnrealEngine/Engine/Binaries/Linux/unrealcv.ini
 
+def read_png(res):
+    import StringIO, PIL.Image
+    img = PIL.Image.open(StringIO.StringIO(res))
+    return np.asarray(img)
+
 class UnrealCVServer():
     """
     A ROS node for the unrealcv API.
@@ -45,7 +50,7 @@ class UnrealCVServer():
         # if 'endpoint' in config:
         #     host, port = config['endpoint']
         # if 'port' in config:
-        #     port = config['port']
+        #     port = config['port'] 
         # if 'hostname' in config:
         #     host = config['hostname']
 
@@ -121,16 +126,24 @@ class UnrealCVServer():
         view_mode = 'lit'
         if hasattr(request, 'view_mode') and request.view_mode in self.view_modes:
             view_mode = request.view_mode
-        print
+        # print
         unrealcv_message = make_vget_camera_image(request.camera_id, view_mode, filename)
         image_filename = self.request_client(unrealcv_message)
-        print(image_filename)
-        if os.path.isfile(image_filename):
-            image_mat = opencv.imread(image_filename)
-            # os.remove(image_filename)
-            print("removing")
-        else:
-            image_mat = np.matrix([[]])
+        print("After Request")
+        # print("Image Filename: "+image_filename)
+        # if os.path.isfile(image_filename):
+        #     image_mat = opencv.imread(image_filename)
+        #     # os.remove(image_filename)
+        #     print("removing")
+        # else:
+        #     print("file does not exist")
+        #     # image_mat = np.matrix([[]])
+        #     image_mat = opencv.imread(image_filename)
+
+        image_mat = read_png(image_filename)
+        image_mat = np.array(image_mat)
+        image_mat = opencv.cvtColor(image_mat, opencv.COLOR_RGB2BGR)
+
         return self.opencv_bridge.cv2_to_imgmsg(image_mat, encoding='passthrough')
 
     def handle_get_camera_location(self, request):
@@ -231,7 +244,7 @@ def make_vget_camera_image(camera_id, view_mode, filename):
     if filename is None:
         # return "vget /camera/{0}/{1}".format(camera_id, view_mode)
         print("filename none")
-        return "vget /camera/0/"+str(view_mode)
+        return "vget /camera/0/lit png"
     else:
         return "vget /camera/{0}/{1} {2}".format(camera_id, view_mode, filename)
 
