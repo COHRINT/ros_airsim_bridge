@@ -14,23 +14,26 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Int16
 
 
-
 class airpub():
     def __init__(self):
         pub = rospy.Publisher("Drone1/image_raw", Image, queue_size=1)
-        # pub2 = rospy.Publisher("Camera1/image_raw", Image, queue_size=1)
-        # pub3 = rospy.Publisher("Camera2/image_raw", Image, queue_size=1)
-        # pub4 = rospy.Publisher("Camera3/image_raw", Image, queue_size=1)
-        # pub5 = rospy.Publisher("Camera4/image_raw", Image, queue_size=1)
+        
         rospy.init_node('image_raw', anonymous=True)
         rate = rospy.Rate(10) # 10hz
         rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
 
+        self.camCoords = [[10, 10, -2], [0, 10, -2], [10, 0, -2], [5, 5, -5]]
+
         # connect to the AirSim simulator 
         self.client = airsim.MultirotorClient()
         self.client.confirmConnection()
-        self.client.enableApiControl(True)
+        self.client.enableApiControl(True, "Drone1")
+        self.client.enableApiControl(True, "Camera1")
+        self.client.armDisarm(True, "Drone1")
+        self.client.armDisarm(True, "Camera1")
         self.camNum = 0
+
+        self.pose = self.client.simGetVehiclePose()
 
         while not rospy.is_shutdown():
             # get camera images from the car
@@ -47,35 +50,10 @@ class airpub():
                 print("Camera")
                 responses1 = self.client.simGetImages([
                     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-                    airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera%d" % (self.camNum +1))  #scene vision image in uncompressed RGB array
-            # client.simPause(True)
-            # # print('Drone1: Retrieved images: %d' % len(responses1))
-            # responses2 = client.simGetImages([
-            #     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-            #     airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera1")  #scene vision image in uncompressed RGB array
-            # # print('Drone2: Retrieved images: %d' % len(responses2))
-            # responses3 = client.simGetImages([
-            #     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-            #     airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera2")  #scene vision image in uncompressed RGB array
-
-            # responses4 = client.simGetImages([
-            #     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-            #     airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera3")  #scene vision image in uncompressed RGB array
-
-            # responses5 = client.simGetImages([
-            #     airsim.ImageRequest("0", airsim.ImageType.DepthVis),  #depth visualization image
-            #     airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera4")  #scene vision image in uncompressed RGB array
-
+                    airsim.ImageRequest("1", airsim.ImageType.Scene, False, False)], vehicle_name="Camera1")  #scene vision image in uncompressed RGB array
+         
             for response1 in responses1:
                 img_rgba_string = response1.image_data_uint8
-            # for response2 in responses2:
-            #     img_rgba_string2 = response2.image_data_uint8
-            # for response3 in responses3:
-            #     img_rgba_string3 = response3.image_data_uint8
-            # for response4 in responses4:
-            #     img_rgba_string4 = response4.image_data_uint8
-            # for response5 in responses5:
-            #     img_rgba_string5 = response5.image_data_uint8
 
             # Populate image message
             msg=Image() 
@@ -92,28 +70,24 @@ class airpub():
             # rospy.loginfo(len(response1.image_data_uint8))
             # publish image message
             pub.publish(msg)
-            # msg.data = img_rgba_string2
-            # pub2.publish(msg)
-            # msg.data = img_rgba_string3
-            # pub3.publish(msg)
-            # msg.data = img_rgba_string4
-            # pub4.publish(msg)
-            # msg.data = img_rgba_string5
-            # pub5.publish(msg)
-            # sleep until next cycle
             rate.sleep()
 
     def setCamNum(self, num):
-        if self.camNum is not 4:
-            print("Disabling Camera %d" %(self.camNum + 1))
-            # self.client.enableApiControl(False, "Camera%d" % (self.camNum +1))
-            # print("Disabling Camera %d" %(self.camNum + 1))
-            self.camNum = num.data
-            # self.client.enableApiControl(True, "Camera%d" % (self.camNum +1))
-            print("Enabling Camera %d" %(self.camNum + 1))
-            return
+        # self.client.confirmConnection()
+        # self.client.enableApiControl(True, "Camera1")
+        # self.client.armDisarm(True, "Camera1")
+
         self.camNum = num.data
-        print(self.camNum + 1)
+        
+        if self.camNum is not 4:
+
+
+            self.pose.position.x_val = self.camCoords[self.camNum][0]
+            self.pose.position.y_val = self.camCoords[self.camNum][1]
+            self.pose.position.z_val = self.camCoords[self.camNum][2]
+
+            self.client.simSetVehiclePose(self.pose, True, "Camera1")
+        
 
 
 if __name__ == '__main__':
