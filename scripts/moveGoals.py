@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+
+import setup_path 
+import airsim
+import rospy
+from geometry_msgs.msg import PoseStamped
+
+import sys
+import time
+
+from harps_interface.msg import *
+from std_msgs.msg import Int16
+
+z = -30
+velocity = 25 #Max speed without vertical jerks
+
+def stop(msg):
+    client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
+
+def movetoGoal(msg):
+
+    print("Callback")
+
+    path = []
+
+    for i in range(0, len(msg.x)):
+        print(msg.x[i])
+        print(msg.y[i])
+        path.append(airsim.Vector3r(msg.x[i], msg.y[i], z))
+
+    client.moveOnPathAsync(path, velocity, 2000, airsim.DrivetrainType.ForwardOnly, 
+                airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1")
+
+    # x, y = msg.x, msg.y
+
+    # print("Moving to: ", x,y)
+
+    # path = []
+
+    # path.append(airsim.Vector3r(x, y, z))
+
+    # client.moveToPositionAsync(x, y, z, velocity, 2000,airsim.DrivetrainType.ForwardOnly, airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1")
+
+
+
+
+if __name__ == "__main__":
+    
+    # velocity = 15
+    # z = -30
+
+    rospy.Subscriber("Drone1/Goal", path, movetoGoal)
+    rospy.Subscriber("Drone1/Stop", Int16, stop)
+    rospy.init_node("move_goal")
+    rate = rospy.Rate(10)
+
+    client = airsim.MultirotorClient()
+    # client = airsim.VehicleClient()
+    client.confirmConnection()
+    client.enableApiControl(True, vehicle_name="Drone1")
+    client.armDisarm(True)
+
+    landed = client.getMultirotorState(vehicle_name="Drone1").landed_state
+    if landed == airsim.LandedState.Landed:
+        print("taking off...")
+        client.takeoffAsync(vehicle_name="Drone1").join()
+
+    landed = client.getMultirotorState(vehicle_name="Drone1").landed_state
+    if landed == airsim.LandedState.Landed:
+        print("takeoff failed - check Unreal message log for details")
+
+    print("climbing to altitude: 30")
+    client.moveToPositionAsync(0, 0, z, velocity, vehicle_name="Drone1").join()
+    print("Ready for Goals")
+
+
+
+    # # start = client.getMultirotorState(vehicle_name="Drone1")
+    # # print(start)
+
+    # print("Going to (10, 0)")
+    # # client.moveToPositionAsync(100, 0, z, velocity, vehicle_name="Drone1").join()
+
+
+
+    while not rospy.is_shutdown():
+
+        rospy.spin()
+        
+        # x = float(input("x: "))
+        # y = float(input("y: "))
+
+        # print("Going to (", x,",", y,")")
+        # client.moveToPositionAsync(x, y, z, velocity, 2000,airsim.DrivetrainType.ForwardOnly, airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1")
+
+    # print("Going to (0, 0)")
+    # client.moveToPositionAsync(100, 0, z, velocity,  2000,airsim.DrivetrainType.ForwardOnly, airsim.YawMode(False,0), velocity + (velocity/2), 1,  vehicle_name="Drone1").join()
+
+    path = []
+
+    path.append(airsim.Vector3r(100, 0, z))
+    path.append(airsim.Vector3r(0, 0, z))
+
+    # client.moveOnPathAsync(path, velocity, airsim.DrivetrainType.ForwardOnly, airsim.YawMode(False,0), vehicle_name="Drone1").join()
+
+    # client.moveOnPathAsync(path, velocity, 2000, airsim.DrivetrainType.ForwardOnly, 
+    #             airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1").join()
