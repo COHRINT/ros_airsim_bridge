@@ -1,0 +1,27 @@
+{
+  "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/master/docs/settings.md",
+  "SettingsVersion": 1.2,
+  "SimMode": "Multirotor",
+  "ViewMode": "",
+  "Vehicles": {
+    "Camera1": {
+      "VehicleType": "SimpleFlight",
+      "DefaultVehicleState": "Inactive",
+      "X": 10, "Y": 10, "Z": -2,
+      "Yaw": 90
+    },
+    "Drone1": {
+          "VehicleType": "SimpleFlight",
+          "DefaultVehicleState": "Inactive",
+          "X": 0, "Y": 0, "Z": -2,
+          "Yaw": 90
+        }
+  },
+  "CameraDefaults": {
+    "CaptureSettings": [{
+        "Width": 480,
+        "Height": 240
+    }]
+  },
+  "CommandMode": "Position"
+}
