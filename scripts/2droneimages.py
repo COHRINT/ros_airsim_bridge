@@ -14,6 +14,10 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Int16
 from geometry_msgs.msg import PoseStamped
 
+from harps_interface.msg import *
+from std_msgs.msg import Int16
+from scipy.spatial import distance
+import numpy as np
 
 class airpub():
     def __init__(self):
@@ -25,7 +29,7 @@ class airpub():
         # self.rate = rospy.Rate(10) # 10hz
         # rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
 
-        self.camCoords = [[100, 100, -2], [3900, 100, -2], [100, 3900, -2], [3900, 39   00, -5]]
+        self.camCoords = [[-100, -100, -2], [100, -100, -2], [100, -100, -2], [100, 100, -5]]
 
         # connect to the AirSim simulator 
         self.client = airsim.MultirotorClient()
@@ -39,6 +43,9 @@ class airpub():
         self.speed = 10
         self.altitude = 20
 
+        self.xGoal = 9999999
+        self.yGoal = 9999999
+
         self.pose = self.client.simGetVehiclePose()
 
 
@@ -48,7 +55,9 @@ class airpub():
 
         self.image_pub = rospy.Publisher("Drone1/image_raw", Image, queue_size=1)
         self.state_pub = rospy.Publisher("Drone1/pose", PoseStamped, queue_size=1)
+        
         rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
+        rospy.Subscriber("Drone1/Goal", path, self.moveToGoal)
         # rospy.Subscriber("/Drone1/Goal", PoseStamped, self.moveToGoal)
         rospy.init_node('image_publisher', anonymous=False)
         self.rate = rospy.Rate(10)
@@ -129,9 +138,12 @@ class airpub():
         
         self.client.armDisarm(False)
 
-    def moveToGoal(self, data):
+    def moveToGoal(self, msg):
  
         print("Moving to goal")
+
+        self.xGoal = msg.x[len(msg.x)-1]
+        self.yGoal = msg.y[len(msg.x)-1]
 
         # drone_state = self.client.getMultirotorState(vehicle_name="Drone1")
         # # print(drone_state)
@@ -168,6 +180,11 @@ class airpub():
         pos = airsim.Vector3r(  pos_ned.x_val, pos_ned.y_val, pos_ned.z_val)
         orientation = airsim.Quaternionr( orientation_ned.w_val,
 orientation_ned.z_val, orientation_ned.x_val, orientation_ned.y_val)
+
+        if(distance.euclidean([self.xGoal, self.yGoal], [pos.x_val, pos.y_val]) < 5):
+            self.client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
+
+            print("CLOSE ENOUGH STOP")
 
         sim_pose_msg = PoseStamped()
         sim_pose_msg.pose.position.x = pos.x_val
