@@ -30,7 +30,10 @@ class airpub():
         # rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
 
         #self.camCoords = [[-100, -100, -2], [100, -100, -2], [100, -100, -2], [100, 100, -5]]
-        self.camCoords = [[0, 0, -15,0], [0, 0, -15,1], [0, 0, -15,2], [0, 0, -15,3]]
+        self.camCoords = [[124, 78, -10, 1], [185,675, -10, 0], [525,410, -8, 3.14/2], [683,790, -10, (3/2)*3.14-3.14/4]]
+        self.offset_x = 173.7 + 75
+        self.offset_y = 845.6 + 75
+
         # connect to the AirSim simulator 
         self.client = airsim.MultirotorClient()
         self.client.confirmConnection()
@@ -165,15 +168,15 @@ class airpub():
         if self.camNum is not 4:
 
 
-            self.pose.position.x_val = self.camCoords[self.camNum][0]
-            self.pose.position.y_val = self.camCoords[self.camNum][1]
+            self.pose.position.x_val = self.camCoords[self.camNum][0] - self.offset_x;
+            self.pose.position.y_val = self.camCoords[self.camNum][1] - self.offset_y; 
             self.pose.position.z_val = self.camCoords[self.camNum][2]
             #self.pose.position.w_val = self.camCoords[self.camNum][3]
             # self.pose.orientation.
             #self.pose.orientation.w_val = self.camCoords[self.camNum][3];
             self.pose.orientation = airsim.to_quaternion(0,0,self.camCoords[self.camNum][3]);  
 
-            print(self.pose); 
+            #print(self.pose); 
             self.client.simSetVehiclePose(self.pose, True, vehicle_name="Camera1").join()
 
     def publishState(self):
