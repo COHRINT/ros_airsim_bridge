@@ -11,7 +11,7 @@ import time
 from harps_interface.msg import *
 from std_msgs.msg import Int16
 
-z = -30
+z = -10
 velocity = 25 #Max speed without vertical jerks
 
 def stop(msg):
@@ -20,6 +20,7 @@ def stop(msg):
 def movetoGoal(msg):
 
     print("Callback")
+    print(msg,msg.x,msg.y); 
 
     path = []
 
@@ -30,7 +31,7 @@ def movetoGoal(msg):
 
     client.moveOnPathAsync(path, velocity, 2000, airsim.DrivetrainType.ForwardOnly, 
                 airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1")
-
+    
     # x, y = msg.x, msg.y
 
     # print("Moving to: ", x,y)
@@ -55,6 +56,24 @@ if __name__ == "__main__":
     rate = rospy.Rate(10)
 
     client = airsim.MultirotorClient()
+    client.confirmConnection()
+    client.enableApiControl(True, vehicle_name="Drone1")
+    #client.simEnableWeather(True); 
+    client.client.call('simEnableWeather',True); 
+    client.client.call('simSetWeatherParameter',0,.9) #Rain
+    client.client.call('simSetWeatherParameter',2,.9) #Snow
+    client.client.call('simSetWeatherParameter',7,.9) #Fog
+    client.client.call('simSetWeatherParameter',4,.1) #MapleLeaf
+    client.client.call('simSetWeatherParameter',3,.9) #RoadSnow
+    client.client.call('simSetWeatherParameter',6,.9) #dust
+
+
+    # client.simSetWeatherParameter(airsim.WeatherParameter.Rain,1)
+    # client.simSetWeatherParameter(airsim.WeatherParameter.Snow,1)
+    # client.simSetWeatherParameter(airsim.WeatherParameter.Fog,1)
+    # client.simSetWeatherParameter(airsim.WeatherParameter.MapleLeaf,1)
+    # client.simSetWeatherParameter(airsim.WeatherParameter.RoadSnow,1)
+
     # client = airsim.VehicleClient()
     client.confirmConnection()
     client.enableApiControl(True, vehicle_name="Drone1")
@@ -69,7 +88,7 @@ if __name__ == "__main__":
     if landed == airsim.LandedState.Landed:
         print("takeoff failed - check Unreal message log for details")
 
-    print("climbing to altitude: 30")
+    print("climbing to altitude: {} meters".format(-z)); 
     client.moveToPositionAsync(0, 0, z, velocity, vehicle_name="Drone1").join()
     print("Ready for Goals")
 
