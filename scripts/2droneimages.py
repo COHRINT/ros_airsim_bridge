@@ -191,12 +191,17 @@ class airpub():
         orientation = airsim.Quaternionr( orientation_ned.w_val,
 orientation_ned.z_val, orientation_ned.x_val, orientation_ned.y_val)
 
-
+        msg = Int16(); 
+        msg.data = 0; 
+        self.goalReached_pub.publish(msg); 
         if(distance.euclidean([self.xGoal, self.yGoal], [pos.x_val, pos.y_val]) < 5):
             self.client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
 
             print("CLOSE ENOUGH STOP")
-            self.goalReached_pub.publish(1); 
+            msg = Int16(); 
+            msg.data = 1; 
+            self.goalReached_pub.publish(msg); 
+
 
         sim_pose_msg = PoseStamped()
         sim_pose_msg.pose.position.x = pos.x_val

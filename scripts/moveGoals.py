@@ -11,8 +11,8 @@ import time
 from harps_interface.msg import *
 from std_msgs.msg import Int16
 
-z = -10
-velocity = 25 #Max speed without vertical jerks
+z = -8
+velocity = 15
 
 def stop(msg):
     client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
