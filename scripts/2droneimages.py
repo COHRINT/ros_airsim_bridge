@@ -51,6 +51,8 @@ class airpub():
 
         self.pose = self.client.simGetVehiclePose()
 
+        self.goalReached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
+
 
 
     
@@ -58,7 +60,8 @@ class airpub():
 
         self.image_pub = rospy.Publisher("Drone1/image_raw", Image, queue_size=1)
         self.state_pub = rospy.Publisher("Drone1/pose", PoseStamped, queue_size=1)
-        
+        self.goalReached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
+
         rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
         rospy.Subscriber("Drone1/Goal", path, self.moveToGoal)
         # rospy.Subscriber("/Drone1/Goal", PoseStamped, self.moveToGoal)
@@ -188,10 +191,12 @@ class airpub():
         orientation = airsim.Quaternionr( orientation_ned.w_val,
 orientation_ned.z_val, orientation_ned.x_val, orientation_ned.y_val)
 
+
         if(distance.euclidean([self.xGoal, self.yGoal], [pos.x_val, pos.y_val]) < 5):
             self.client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
 
             print("CLOSE ENOUGH STOP")
+            self.goalReached_pub.publish(1); 
 
         sim_pose_msg = PoseStamped()
         sim_pose_msg.pose.position.x = pos.x_val
