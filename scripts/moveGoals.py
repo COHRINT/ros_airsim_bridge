@@ -22,6 +22,7 @@ def movetoGoal(msg):
     #print("Callback")
     #print(msg,msg.x,msg.y); 
     print("Goal Recieved: {}, {}".format(msg.x,msg.y))
+
     reached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
     move_msg = Int16(); 
     move_msg.data = 0; 
@@ -32,8 +33,15 @@ def movetoGoal(msg):
     for i in range(0, len(msg.x)):
         print(msg.x[i])
         print(msg.y[i])
-        if(msg.x[i] > 500 and msg.y[i] < 400):
-        	tmpZ = -14;
+
+        #Avoids desert hills
+        if(msg.x[i] > 450 and msg.y[i] < 400):
+        	tmpZ = -30;
+
+        #Avoids interior mountians
+        if(msg.y[i] > 300 and msg.y[i] < 750 and msg.x[i] < 680 and msg.x[i] > 325):
+            tmpZ = 60; 
+            print('Current Z',tmpZ)
         path.append(airsim.Vector3r(msg.x[i], msg.y[i], tmpZ))
 
     client.moveOnPathAsync(path, velocity, 2000, airsim.DrivetrainType.ForwardOnly, 
