@@ -12,22 +12,29 @@ from harps_interface.msg import *
 from std_msgs.msg import Int16
 
 z = -8
-velocity = 15
+velocity = 20
 
 def stop(msg):
     client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
 
 def movetoGoal(msg):
 
-    print("Callback")
-    print(msg,msg.x,msg.y); 
-
+    #print("Callback")
+    #print(msg,msg.x,msg.y); 
+    print("Goal Recieved: {}, {}".format(msg.x,msg.y))
+    reached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
+    move_msg = Int16(); 
+    move_msg.data = 0; 
+    reached_pub.publish(move_msg); 
     path = []
 
+    tmpZ = z; 
     for i in range(0, len(msg.x)):
         print(msg.x[i])
         print(msg.y[i])
-        path.append(airsim.Vector3r(msg.x[i], msg.y[i], z))
+        if(msg.x[i] > 500 and msg.y[i] < 400):
+        	tmpZ = -14;
+        path.append(airsim.Vector3r(msg.x[i], msg.y[i], tmpZ))
 
     client.moveOnPathAsync(path, velocity, 2000, airsim.DrivetrainType.ForwardOnly, 
                 airsim.YawMode(False,0), velocity + (velocity/2), 1, vehicle_name="Drone1")
@@ -49,7 +56,7 @@ if __name__ == "__main__":
     
     # velocity = 15
     # z = -30
-
+	
     rospy.Subscriber("Drone1/Goal", path, movetoGoal)
     rospy.Subscriber("Drone1/Stop", Int16, stop)
     rospy.init_node("move_goal")

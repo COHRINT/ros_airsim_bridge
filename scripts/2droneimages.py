@@ -11,8 +11,8 @@ import rospy
 
 # ROS Image message
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int16
-from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Int16, String
+from geometry_msgs.msg import PoseStamped, Pose
 
 from harps_interface.msg import *
 from std_msgs.msg import Int16
@@ -30,7 +30,9 @@ class airpub():
         # rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
 
         #self.camCoords = [[-100, -100, -2], [100, -100, -2], [100, -100, -2], [100, 100, -5]]
-        self.camCoords = [[124, 78, -10, 1], [185,675, -10, 0], [525,410, -8, 3.14/2], [683,790, -10, (3/2)*3.14-3.14/4]]
+        #self.camCoords = [[124, 78, -10, 1], [185,675, -10, 0], [525,410, -8, 3.14/2], [683,790, -10, (3/2)*3.14-3.14/4]]
+        self.camCoords = [[124, 78, -10, 1], [185,675, -10, 0], [525,410, -8, 3.14/2], [683,790, -10, (3/2)*3.14-3.14/4], [440,350,-6,(3/2)*3.14-3.14/3], [470,310,-10,2*3.14-3.14/4], [613,440,-4,0]]; 
+        #self.camCoords = [[124, 78, -10, 1], [185,675, -10, 0], [525,410, -8, 3.14/2], [683,790, -10, (3/2)*3.14-3.14/4], [0,0,-10,0], [0,0,-10,3.14], [0,0,-10,3.14/2]]; 
         self.offset_x = 173.7 + 75
         self.offset_y = 845.6 + 75
 
@@ -53,15 +55,18 @@ class airpub():
 
         self.goalReached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
 
-
+        self.moving = True; 
 
     
     def start(self):
 
         self.image_pub = rospy.Publisher("Drone1/image_raw", Image, queue_size=1)
         self.state_pub = rospy.Publisher("Drone1/pose", PoseStamped, queue_size=1)
+        self.tarCar_pub = rospy.Publisher("Target/car",PoseStamped,queue_size=1); 
+        self.tarFoot_pub = rospy.Publisher("Target/foot",PoseStamped,queue_size=1); 
         self.goalReached_pub = rospy.Publisher("/GoalReached", Int16, queue_size=1)
 
+        self.obs_pub = rospy.Publisher("/Obs",String,queue_size=1); 
         rospy.Subscriber("/Camera_Num", Int16, self.setCamNum)
         rospy.Subscriber("Drone1/Goal", path, self.moveToGoal)
         # rospy.Subscriber("/Drone1/Goal", PoseStamped, self.moveToGoal)
@@ -108,7 +113,7 @@ class airpub():
             # get camera images from the car
             #print(self.camNum)
             # client.simPause(False)
-            if self.camNum is 4:
+            if self.camNum is 7:
                 # print("Drone")
                 # responses1 = client.simGetImage("0", airsim.ImageType.Scene, "Drone1")
                 # img_rgba_string = responses1
@@ -167,9 +172,9 @@ class airpub():
         #print("CamNum Callback:")
 
         self.camNum = num.data
-        
-        if self.camNum is not 4:
-
+        print("Switching to Camera: {}".format(self.camNum)); 
+        if self.camNum is not 7:
+            print("Cam Num is not 7"); 
 
             self.pose.position.x_val = self.camCoords[self.camNum][0] - self.offset_x;
             self.pose.position.y_val = self.camCoords[self.camNum][1] - self.offset_y; 
@@ -178,6 +183,8 @@ class airpub():
             # self.pose.orientation.
             #self.pose.orientation.w_val = self.camCoords[self.camNum][3];
             self.pose.orientation = airsim.to_quaternion(0,0,self.camCoords[self.camNum][3]);  
+
+            print(self.pose); 
 
             #print(self.pose); 
             self.client.simSetVehiclePose(self.pose, True, vehicle_name="Camera1").join()
@@ -191,16 +198,22 @@ class airpub():
         orientation = airsim.Quaternionr( orientation_ned.w_val,
 orientation_ned.z_val, orientation_ned.x_val, orientation_ned.y_val)
 
-        msg = Int16(); 
-        msg.data = 0; 
-        self.goalReached_pub.publish(msg); 
-        if(distance.euclidean([self.xGoal, self.yGoal], [pos.x_val, pos.y_val]) < 5):
-            self.client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
+ 
 
-            print("CLOSE ENOUGH STOP")
-            msg = Int16(); 
-            msg.data = 1; 
-            self.goalReached_pub.publish(msg); 
+        if(distance.euclidean([self.xGoal, self.yGoal], [pos.x_val, pos.y_val]) < 5):
+            if(self.moving):
+                self.client.moveByVelocityAsync(0, 0, 0, 10, vehicle_name="Drone1")
+
+                print("CLOSE ENOUGH STOP")
+                msg = Int16(); 
+                msg.data = 1; 
+                self.goalReached_pub.publish(msg); 
+                self.moving = False; 
+        else:
+            self.moving = True; 
+
+        
+
 
 
         sim_pose_msg = PoseStamped()
@@ -212,6 +225,46 @@ orientation_ned.z_val, orientation_ned.x_val, orientation_ned.y_val)
         sim_pose_msg.pose.orientation.y = orientation.y_val
         sim_pose_msg.pose.orientation.z = orientation.z_val
         self.state_pub.publish(sim_pose_msg)
+
+
+
+        #tarCarPose = self.client.simGetObjectPose("Target_Transform_46")
+        tarCarPose = self.client.simGetObjectPose("Target")
+       # print(tarCarPose); 
+
+        tarPoseMsg = PoseStamped(); 
+        tarPoseMsg.pose.position.x = tarCarPose.position.x_val; 
+        tarPoseMsg.pose.position.y = tarCarPose.position.y_val; 
+        tarPoseMsg.pose.position.z = tarCarPose.position.z_val; 
+        tarPoseMsg.pose.orientation.w = 1; 
+        tarPoseMsg.pose.orientation.x = 0 
+        tarPoseMsg.pose.orientation.y = 0
+        tarPoseMsg.pose.orientation.z = 0
+
+        # tarFootPose = self.client.simGetObjectPose("ThirdPersonCharacter"); 
+
+        # print("Target Car Pose>>>>>>>>>>>>>>"); 
+        # print(tarCarPose); 
+
+        # print("Target Foot Pose>>>>>>>>>>>>>"); 
+        # print(tarFootPose); 
+
+
+        self.tarCar_pub.publish(tarPoseMsg); 
+        # self.tarFoot_pub.publish(tarFootPose);
+
+        dis = np.sqrt((pos.x_val-tarCarPose.position.x_val)**2 + (pos.y_val - tarCarPose.position.x_val)**2)
+        obs = "Null"; 
+        if(dis < 75):
+            obs = "Captured"; 
+        elif(dis < 150):
+            obs = "Detect"
+
+
+
+        self.obs_pub.publish(obs);  
+
+
         return
         
 
